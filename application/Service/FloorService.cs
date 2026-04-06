@@ -38,6 +38,8 @@ public class FloorService : IFloorService
         // delete nodes and their lines using NodeService
         _nodeService.DeleteNodesByFloorIds(floorIds);
 
+
+
         // then delete the floors themselves
         _floorRepository.SoftDeleteByVenueId(venueId);
         return true;

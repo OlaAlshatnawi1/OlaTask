@@ -10,25 +10,23 @@ namespace WebApplication11.Controllers
     public class LineController : ControllerBase
     {
 
-        private readonly IGenericRepository<Line> _repository;
         private readonly ILineService _lineService;
 
-        public LineController(IGenericRepository<Line> repository, ILineService lineService)
+        public LineController(ILineService lineService)
         {
-            _repository = repository;
             _lineService = lineService;
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(_repository.GetAll());
+            return Ok(_lineService.GetAll());
         }
 
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var line = _repository.GetById(id);
+            var line = _lineService.GetById(id);
 
             if (line == null)
                 return NotFound();
@@ -39,7 +37,7 @@ namespace WebApplication11.Controllers
         [HttpPost]
         public IActionResult Create(Line line)
         {
-            var created = _repository.Create(line);
+            var created = _lineService.Create(line);
             return Ok(created);
         }
 
@@ -47,7 +45,7 @@ namespace WebApplication11.Controllers
         public IActionResult Update(int id, Line line)
         {
             line.Id = id;
-            return Ok(_repository.Update(line));
+            return Ok(_lineService.Update(line));
         }
 
         [HttpDelete("{id}")]

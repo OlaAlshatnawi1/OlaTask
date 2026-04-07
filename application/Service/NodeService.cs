@@ -1,5 +1,6 @@
 ﻿using application.Service.Interfaces;
 using Domain.Interfaces;
+using Domain.Models;
 
 namespace Application.Services;
 
@@ -12,6 +13,26 @@ public class NodeService : INodeService
     {
         _nodeRepository = nodeRepository;
         _lineService = lineService;
+    }
+
+    public List<Node> GetAll()
+    {
+        return _nodeRepository.GetAll();
+    }
+
+    public Node GetById(int id)
+    {
+        return _nodeRepository.GetById(id);
+    }
+
+    public Node Create(Node node)
+    {
+        return _nodeRepository.Create(node);
+    }
+
+    public Node Update(Node node)
+    {
+        return _nodeRepository.Update(node);
     }
 
     public bool DeleteNode(int id)

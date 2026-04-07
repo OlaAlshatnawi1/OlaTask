@@ -10,26 +10,24 @@ namespace WebApplication11.Controllers
     [Route("api/[controller]")]
     public class FloorController : ControllerBase
     {
-        private readonly IGenericRepository<Floor> _repository;
         private readonly IFloorService _floorService;
 
-        public FloorController(IGenericRepository<Floor> repository, IFloorService floorService)
+        public FloorController(IFloorService floorService)
         {
-            _repository = repository;
             _floorService = floorService;
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(_repository.GetAll());
+            return Ok(_floorService.GetAll());
         }
 
 
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var floor = _repository.GetById(id);
+            var floor = _floorService.GetById(id);
 
             if (floor == null)
                 return NotFound();
@@ -40,7 +38,7 @@ namespace WebApplication11.Controllers
         [HttpPost]
         public IActionResult Create(Floor floor)
         {
-            var created = _repository.Create(floor);
+            var created = _floorService.Create(floor);
             return Ok(created);
         }
 
@@ -48,7 +46,7 @@ namespace WebApplication11.Controllers
         public IActionResult Update(int id, Floor floor)
         {
             floor.Id = id;
-            return Ok(_repository.Update(floor));
+            return Ok(_floorService.Update(floor));
         }
 
         [HttpDelete("{id}")]

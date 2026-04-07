@@ -1,5 +1,6 @@
 ﻿using application.Service.Interfaces;
 using Domain.Interfaces;
+using Domain.Models;
 
 namespace Application.Services;
 
@@ -14,31 +15,44 @@ public class FloorService : IFloorService
         _nodeService = nodeService;
     }
 
-    // delete one floor → use NodeService to delete its nodes and lines first
+    public List<Floor> GetAll()
+    {
+        return _floorRepository.GetAll();
+    }
+
+    public Floor GetById(int id)
+    {
+        return _floorRepository.GetById(id);
+    }
+
+    public Floor Create(Floor floor)
+    {
+        return _floorRepository.Create(floor);
+    }
+
+    public Floor Update(Floor floor)
+    {
+        return _floorRepository.Update(floor);
+    }
+
     public bool DeleteFloor(int id)
     {
         if (_floorRepository.GetById(id) is null)
             return false;
 
-        // delete nodes and their lines using NodeService
         _nodeService.DeleteNodesByFloorId(id);
 
-        // then delete the floor itself
         _floorRepository.SoftDeleteById(id);
         return true;
     }
 
-    // delete all floors in one venue → use NodeService to delete their nodes and lines first
     public bool DeleteFloorsByVenueId(int venueId)
     {
-        // get all floor ids in this venue
         var floorIds = _floorRepository.GetIdsByVenueId(venueId).ToList();
         if (floorIds.Count == 0) return true;
 
-        // delete nodes and their lines using NodeService
         _nodeService.DeleteNodesByFloorIds(floorIds);
 
-        // then delete the floors themselves
         _floorRepository.SoftDeleteByVenueId(venueId);
         return true;
     }

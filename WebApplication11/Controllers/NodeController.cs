@@ -10,25 +10,23 @@ namespace WebApplication11.Controllers
     public class NodeController : ControllerBase
     {
 
-        private readonly IGenericRepository<Node> _repository;
         private readonly INodeService _nodeService;
 
-        public NodeController(IGenericRepository<Node> repository, INodeService nodeService)
+        public NodeController(INodeService nodeService)
         {
-            _repository = repository;
             _nodeService = _nodeService;
         }
 
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(_repository.GetAll());
+            return Ok(_nodeService.GetAll());
         }
 
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var node = _repository.GetById(id);
+            var node = _nodeService.GetById(id);
 
             if (node == null)
                 return NotFound();
@@ -39,7 +37,7 @@ namespace WebApplication11.Controllers
         [HttpPost]
         public IActionResult Create(Node node)
         {
-            var created = _repository.Create(node);
+            var created = _nodeService.Create(node);
             return Ok(created);
         }
 
@@ -47,7 +45,7 @@ namespace WebApplication11.Controllers
         public IActionResult Update(int id, Node node)
         {
             node.Id = id;
-            return Ok(_repository.Update(node));
+            return Ok(_nodeService.Update(node));
         }
 
         [HttpDelete("{id}")]

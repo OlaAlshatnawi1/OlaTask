@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Domain.Models;
 
 namespace application.Service.Interfaces
 {
     public interface INodeService
     {
+        List<Node> GetAll();
+        Node GetById(int id);
+        Node Create(Node node);
+        Node Update(Node node);
         bool DeleteNode(int id);
         bool DeleteNodesByFloorId(int floorId);
         bool DeleteNodesByFloorIds(IEnumerable<int> floorIds);

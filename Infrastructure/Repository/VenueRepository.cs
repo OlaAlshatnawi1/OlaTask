@@ -29,7 +29,6 @@ public class VenueRepository : GenericRepository<Venue>, IVenueRepository
         try
         {
             _context.Set<Venue>().Add(entity);
-            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -43,7 +42,6 @@ public class VenueRepository : GenericRepository<Venue>, IVenueRepository
         try
         {
             _context.Set<Venue>().Update(entity);
-            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -58,6 +56,5 @@ public class VenueRepository : GenericRepository<Venue>, IVenueRepository
         if (venue is null) return;
 
         venue.IsDeleted = true;
-        _context.SaveChanges();
     }
 }

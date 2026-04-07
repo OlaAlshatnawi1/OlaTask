@@ -30,7 +30,6 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
         try
         {
             _context.Set<Floor>().Add(entity);
-            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -44,7 +43,6 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
         try
         {
             _context.Set<Floor>().Update(entity);
-            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -60,7 +58,6 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
         if (floor is null) return;
 
         floor.IsDeleted = true;
-        _context.SaveChanges();
     }
 
     public void SoftDeleteByVenueId(int venueId)
@@ -74,7 +71,6 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
         foreach (var floor in floors)
             floor.IsDeleted = true;
 
-        _context.SaveChanges();
     }
 
     public IEnumerable<int> GetIdsByVenueId(int venueId)

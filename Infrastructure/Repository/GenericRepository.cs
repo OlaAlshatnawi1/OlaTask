@@ -33,7 +33,6 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         try
         {
             _context.Set<T>().Add(entity);
-            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -47,7 +46,6 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         try
         {
             _context.Set<T>().Update(entity);
-            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)

@@ -1,5 +1,6 @@
 ﻿using application.Service.Interfaces;
 using Domain.Interfaces;
+using Domain.Models;
 
 namespace application.Service
 {
@@ -11,6 +12,26 @@ namespace application.Service
         public LineService(ILineRepository lineRepository)
         {
             _lineRepository = lineRepository;
+        }
+
+        public List<Line> GetAll()
+        {
+            return _lineRepository.GetAll();
+        }
+
+        public Line GetById(int id)
+        {
+            return _lineRepository.GetById(id);
+        }
+
+        public Line Create(Line line)
+        {
+            return _lineRepository.Create(line);
+        }
+
+        public Line Update(Line line)
+        {
+            return _lineRepository.Update(line);
         }
 
         public bool DeleteLine(int id)

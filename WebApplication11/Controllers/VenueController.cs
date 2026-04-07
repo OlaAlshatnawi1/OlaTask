@@ -7,25 +7,24 @@ using application.Service.Interfaces;
 [Route("api/[controller]")]
 public class VenueController : ControllerBase
 {
-    private readonly IGenericRepository<Venue> _repository;
+    
     private readonly IVenueService _venueService;
 
-    public VenueController(IGenericRepository<Venue> repository, IVenueService venueService)
+    public VenueController( IVenueService venueService)
     {
-        _repository = repository;
         _venueService = venueService;
     }
 
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(_repository.GetAll());
+        return Ok(_venueService.GetAll());
     }
 
     [HttpGet("{id}")]
     public IActionResult GetById(int id)
     {
-        var venue = _repository.GetById(id);
+        var venue = _venueService.GetById(id);
 
         if (venue == null)
             return NotFound();
@@ -36,7 +35,7 @@ public class VenueController : ControllerBase
     [HttpPost]
     public IActionResult Create(Venue venue)
     {
-        var created = _repository.Create(venue);
+        var created = _venueService.Create(venue);
         return Ok(created);
     }
 
@@ -44,13 +43,13 @@ public class VenueController : ControllerBase
     public IActionResult Update(int id, Venue venue)
     {
         venue.Id = id;
-        return Ok(_repository.Update(venue));
+        return Ok(_venueService.Update(venue));
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
-        if (!_venueService.DeleteVenue(id))
+        if (!await _venueService.DeleteVenue(id))
             return NotFound();
 
         return NoContent();

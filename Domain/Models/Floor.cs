@@ -8,3 +8,6 @@ public class Floor
     public int Level { get; set; }
     public bool IsDeleted { get; set; }
 }
+
+
+

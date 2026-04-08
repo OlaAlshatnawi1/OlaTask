@@ -21,20 +21,16 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Venue>()
-            .ToTable("venue")
-            .HasQueryFilter(v => !v.IsDeleted);
+            .ToTable("venue");
 
         modelBuilder.Entity<Floor>()
-            .ToTable("floor")
-            .HasQueryFilter(f => !f.IsDeleted);
+            .ToTable("floor");
 
         modelBuilder.Entity<Node>()
-            .ToTable("node")
-            .HasQueryFilter(n => !n.IsDeleted);
+            .ToTable("node");
 
         modelBuilder.Entity<Line>()
-            .ToTable("line")
-            .HasQueryFilter(l => !l.IsDeleted);
+            .ToTable("line");
 
         base.OnModelCreating(modelBuilder);
     }

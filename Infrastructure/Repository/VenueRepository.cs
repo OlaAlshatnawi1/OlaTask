@@ -28,6 +28,7 @@ public class VenueRepository : GenericRepository<Venue>, IVenueRepository
     {
         try
         {
+            entity.UpdateStatus = 1;
             _context.Set<Venue>().Add(entity);
             _context.SaveChanges();
             return entity;
@@ -42,6 +43,7 @@ public class VenueRepository : GenericRepository<Venue>, IVenueRepository
     {
         try
         {
+            entity.UpdateStatus = 2;
             _context.Set<Venue>().Update(entity);
             _context.SaveChanges();
             return entity;
@@ -57,7 +59,11 @@ public class VenueRepository : GenericRepository<Venue>, IVenueRepository
         var venue = _context.Set<Venue>().Find(id);
         if (venue is null) return;
 
+<<<<<<< Updated upstream
         venue.IsDeleted = true;
         _context.SaveChanges();
+=======
+        venue.UpdateStatus = 3;
+>>>>>>> Stashed changes
     }
 }

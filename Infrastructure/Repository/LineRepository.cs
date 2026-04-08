@@ -27,6 +27,7 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
     {
         try
         {
+            entity.UpdateStatus = 1;
             _context.Set<Line>().Add(entity);
             _context.SaveChanges();
             return entity;
@@ -41,6 +42,7 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
     {
         try
         {
+            entity.UpdateStatus = 2;
             _context.Set<Line>().Update(entity);
             _context.SaveChanges();
             return entity;
@@ -56,8 +58,12 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
         var line = _context.Set<Line>().Find(id);
         if (line is null) return;
 
+<<<<<<< Updated upstream
         line.IsDeleted = true;
         _context.SaveChanges();
+=======
+        line.UpdateStatus = 3;
+>>>>>>> Stashed changes
     }
 
     public void SoftDeleteByNodeIds(IEnumerable<int> nodeIds)
@@ -69,7 +75,7 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
         if (lines.Count == 0) return;
 
         foreach (var line in lines)
-            line.IsDeleted = true;
+            line.UpdateStatus = 3;
 
         _context.SaveChanges();
     }

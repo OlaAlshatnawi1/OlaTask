@@ -29,6 +29,7 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
     {
         try
         {
+            entity.UpdateStatus = 1;
             _context.Set<Floor>().Add(entity);
             _context.SaveChanges();
             return entity;
@@ -43,6 +44,7 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
     {
         try
         {
+            entity.UpdateStatus = 2;
             _context.Set<Floor>().Update(entity);
             _context.SaveChanges();
             return entity;
@@ -59,20 +61,24 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
         var floor = _context.Set<Floor>().Find(id);
         if (floor is null) return;
 
+<<<<<<< Updated upstream
         floor.IsDeleted = true;
         _context.SaveChanges();
+=======
+        floor.UpdateStatus = 3;
+>>>>>>> Stashed changes
     }
 
     public void SoftDeleteByVenueId(int venueId)
     {
         var floors = _context.Set<Floor>()
-            .Where(f => f.VenueId == venueId && !f.IsDeleted)
+            .Where(f => f.VenueId == venueId && f.UpdateStatus != 3)
             .ToList();
 
         if (floors.Count == 0) return;
 
         foreach (var floor in floors)
-            floor.IsDeleted = true;
+            floor.UpdateStatus = 3;
 
         _context.SaveChanges();
     }
@@ -80,7 +86,7 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
     public IEnumerable<int> GetIdsByVenueId(int venueId)
     {
         return _context.Set<Floor>()
-            .Where(f => f.VenueId == venueId && !f.IsDeleted)
+            .Where(f => f.VenueId == venueId && f.UpdateStatus != 3)
             .Select(f => f.Id)
             .ToList();
     }

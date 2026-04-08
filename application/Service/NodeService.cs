@@ -1,4 +1,5 @@
 ﻿using application.Service.Interfaces;
+using application.DTOs;
 using Domain.Interfaces;
 
 namespace Application.Services;
@@ -14,6 +15,54 @@ public class NodeService : INodeService
         _lineService = lineService;
     }
 
+<<<<<<< Updated upstream
+=======
+    public List<NodeDto> GetAll()
+    {
+        return _nodeRepository.GetAll()
+            .Where(n => n.UpdateStatus != 3)
+            .Select(n => new NodeDto
+            {
+                Id = n.Id,
+                FloorId = n.FloorId,
+                X = n.X,
+                Y = n.Y,
+                Long = n.Long,
+                Lat = n.Lat,
+                NodeType = n.NodeType
+            })
+            .ToList();
+    }
+
+    public NodeDto GetById(int id)
+    {
+        var node = _nodeRepository.GetById(id);
+        if (node is null || node.UpdateStatus == 3)
+            return null;
+
+        return new NodeDto
+        {
+            Id = node.Id,
+            FloorId = node.FloorId,
+            X = node.X,
+            Y = node.Y,
+            Long = node.Long,
+            Lat = node.Lat,
+            NodeType = node.NodeType
+        };
+    }
+
+    public Node Create(Node node)
+    {
+        return _nodeRepository.Create(node);
+    }
+
+    public Node Update(Node node)
+    {
+        return _nodeRepository.Update(node);
+    }
+
+>>>>>>> Stashed changes
     public bool DeleteNode(int id)
     {
         if (_nodeRepository.GetById(id) is null)

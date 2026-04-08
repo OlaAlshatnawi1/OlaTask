@@ -28,6 +28,7 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
     {
         try
         {
+            entity.UpdateStatus = 1;
             _context.Set<Node>().Add(entity);
             _context.SaveChanges();
             return entity;
@@ -42,6 +43,7 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
     {
         try
         {
+            entity.UpdateStatus = 2;
             _context.Set<Node>().Update(entity);
             _context.SaveChanges();
             return entity;
@@ -57,20 +59,24 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
         var node = _context.Set<Node>().Find(id);
         if (node is null) return;
 
+<<<<<<< Updated upstream
         node.IsDeleted = true;
         _context.SaveChanges();
+=======
+        node.UpdateStatus = 3;
+>>>>>>> Stashed changes
     }
 
     public void SoftDeleteByFloorId(int floorId)
     {
         var nodes = _context.Set<Node>()
-            .Where(n => n.FloorId == floorId && !n.IsDeleted)
+            .Where(n => n.FloorId == floorId && n.UpdateStatus != 3)
             .ToList();
 
         if (nodes.Count == 0) return;
 
         foreach (var node in nodes)
-            node.IsDeleted = true;
+            node.UpdateStatus = 3;
 
         _context.SaveChanges();
     }
@@ -78,13 +84,13 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
     public void SoftDeleteByFloorIds(IEnumerable<int> floorIds)
     {
         var nodes = _context.Set<Node>()
-            .Where(n => floorIds.Contains(n.FloorId) && !n.IsDeleted)
+            .Where(n => floorIds.Contains(n.FloorId) && n.UpdateStatus != 3)
             .ToList();
 
         if (nodes.Count == 0) return;
 
         foreach (var node in nodes)
-            node.IsDeleted = true;
+            node.UpdateStatus = 3;
 
         _context.SaveChanges();
     }
@@ -92,7 +98,7 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
     public IEnumerable<int> GetIdsByFloorId(int floorId)
     {
         return _context.Set<Node>()
-            .Where(n => n.FloorId == floorId && !n.IsDeleted)
+            .Where(n => n.FloorId == floorId && n.UpdateStatus != 3)
             .Select(n => n.Id)
             .ToList();
     }
@@ -100,7 +106,7 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
     public IEnumerable<int> GetIdsByFloorIds(IEnumerable<int> floorIds)
     {
         return _context.Set<Node>()
-            .Where(n => floorIds.Contains(n.FloorId) && !n.IsDeleted)
+            .Where(n => floorIds.Contains(n.FloorId) && n.UpdateStatus != 3)
             .Select(n => n.Id)
             .ToList();
     }

@@ -15,8 +15,12 @@ namespace WebApplication11.Controllers
 
         public NodeController(IGenericRepository<Node> repository, INodeService nodeService)
         {
+<<<<<<< Updated upstream
             _repository = repository;
             _nodeService = _nodeService;
+=======
+            _nodeService = nodeService;
+>>>>>>> Stashed changes
         }
 
         [HttpGet]

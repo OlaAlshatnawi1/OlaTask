@@ -1,6 +1,6 @@
-﻿namespace Domain.Models;
+namespace application.DTOs;
 
-public class Node
+public class NodeDto
 {
     public int Id { get; set; }
     public int FloorId { get; set; }
@@ -9,5 +9,4 @@ public class Node
     public decimal Long { get; set; }
     public decimal Lat { get; set; }
     public string NodeType { get; set; }
-    public int UpdateStatus { get; set; }
 }

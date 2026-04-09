@@ -27,7 +27,9 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
     {
         try
         {
+            entity.UpdateStatus = 1;
             _context.Set<Line>().Add(entity);
+            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -40,7 +42,9 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
     {
         try
         {
+            entity.UpdateStatus = 2;
             _context.Set<Line>().Update(entity);
+            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -55,6 +59,7 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
         if (line is null) return;
 
         line.UpdateStatus = 3;
+        _context.SaveChanges();
     }
 
     public void SoftDeleteByNodeIds(IEnumerable<int> nodeIds)
@@ -67,7 +72,8 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
 
         foreach (var line in lines)
             line.UpdateStatus = 3;
-
+       
+        _context.SaveChanges();
     }
 
 }

@@ -1,8 +1,9 @@
-﻿using Domain.Models;
+﻿using application.Service;
+using Domain.Interfaces;
+using Domain.Models;
 using Infrastructure.DB;
 using Microsoft.EntityFrameworkCore;
-using application.Service;
-using Domain.Interfaces;
+using System.Drawing;
 
 namespace Infrastructure.Repository;
 
@@ -29,7 +30,9 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
     {
         try
         {
+            entity.UpdateStatus = 1;
             _context.Set<Floor>().Add(entity);
+            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -42,7 +45,9 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
     {
         try
         {
+            entity.UpdateStatus = 2;
             _context.Set<Floor>().Update(entity);
+            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -58,6 +63,7 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
         if (floor is null) return;
 
         floor.UpdateStatus = 3;
+        _context.SaveChanges();
     }
 
     public void SoftDeleteByVenueId(int venueId)
@@ -70,6 +76,8 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
 
         foreach (var floor in floors)
             floor.UpdateStatus = 3; ;
+
+        _context.SaveChanges();
 
     }
 

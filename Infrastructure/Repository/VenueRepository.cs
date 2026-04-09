@@ -28,7 +28,9 @@ public class VenueRepository : GenericRepository<Venue>, IVenueRepository
     {
         try
         {
+            entity.UpdateStatus = 1;
             _context.Set<Venue>().Add(entity);
+            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -41,7 +43,9 @@ public class VenueRepository : GenericRepository<Venue>, IVenueRepository
     {
         try
         {
+            entity.UpdateStatus = 2;
             _context.Set<Venue>().Update(entity);
+            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -56,5 +60,6 @@ public class VenueRepository : GenericRepository<Venue>, IVenueRepository
         if (venue is null) return;
 
         venue.UpdateStatus = 3;
+        _context.SaveChanges();
     }
 }

@@ -28,7 +28,9 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
     {
         try
         {
+            entity.UpdateStatus = 1;
             _context.Set<Node>().Add(entity);
+            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -41,7 +43,9 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
     {
         try
         {
+            entity.UpdateStatus = 2;
             _context.Set<Node>().Update(entity);
+            _context.SaveChanges();
             return entity;
         }
         catch (DbUpdateException ex)
@@ -56,6 +60,7 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
         if (node is null) return;
 
         node.UpdateStatus = 3;
+        _context.SaveChanges();
     }
 
     public void SoftDeleteByFloorId(int floorId)
@@ -69,6 +74,7 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
         foreach (var node in nodes)
             node.UpdateStatus = 3;
 
+        _context.SaveChanges();
     }
 
     public void SoftDeleteByFloorIds(IEnumerable<int> floorIds)
@@ -82,6 +88,7 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
         foreach (var node in nodes)
             node.UpdateStatus = 3;
 
+        _context.SaveChanges();
     }
 
     public IEnumerable<int> GetIdsByFloorId(int floorId)

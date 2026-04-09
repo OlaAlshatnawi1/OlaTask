@@ -55,39 +55,39 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
         var node = _context.Set<Node>().Find(id);
         if (node is null) return;
 
-        node.IsDeleted = true;
+        node.UpdateStatus = 3;
     }
 
     public void SoftDeleteByFloorId(int floorId)
     {
         var nodes = _context.Set<Node>()
-            .Where(n => n.FloorId == floorId && !n.IsDeleted)
+            .Where(n => n.FloorId == floorId && n.UpdateStatus != 3)
             .ToList();
 
         if (nodes.Count == 0) return;
 
         foreach (var node in nodes)
-            node.IsDeleted = true;
+            node.UpdateStatus = 3;
 
     }
 
     public void SoftDeleteByFloorIds(IEnumerable<int> floorIds)
     {
         var nodes = _context.Set<Node>()
-            .Where(n => floorIds.Contains(n.FloorId) && !n.IsDeleted)
+            .Where(n => floorIds.Contains(n.FloorId) && n.UpdateStatus != 3)
             .ToList();
 
         if (nodes.Count == 0) return;
 
         foreach (var node in nodes)
-            node.IsDeleted = true;
+            node.UpdateStatus = 3;
 
     }
 
     public IEnumerable<int> GetIdsByFloorId(int floorId)
     {
         return _context.Set<Node>()
-            .Where(n => n.FloorId == floorId && !n.IsDeleted)
+            .Where(n => n.FloorId == floorId && n.UpdateStatus != 3)
             .Select(n => n.Id)
             .ToList();
     }
@@ -95,7 +95,7 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
     public IEnumerable<int> GetIdsByFloorIds(IEnumerable<int> floorIds)
     {
         return _context.Set<Node>()
-            .Where(n => floorIds.Contains(n.FloorId) && !n.IsDeleted)
+            .Where(n => floorIds.Contains(n.FloorId) && n.UpdateStatus != 3)
             .Select(n => n.Id)
             .ToList();
     }

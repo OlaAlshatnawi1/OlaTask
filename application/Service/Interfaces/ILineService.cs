@@ -1,11 +1,12 @@
-﻿using Domain.Models;
+﻿using application.DTOs;
+using Domain.Models;
 
 namespace application.Service.Interfaces
 {
     public interface ILineService
     {
-        List<Line> GetAll();
-        Line GetById(int id);
+        List<LineDto> GetAll();
+        LineDto GetById(int id);
         Line Create(Line line);
         Line Update(Line line);
         bool DeleteLine(int id);

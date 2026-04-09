@@ -1,6 +1,7 @@
 ﻿using application.Service.Interfaces;
 using Domain.Interfaces;
 using Domain.Models;
+using application.DTOs;
 
 
 namespace Application.Services;
@@ -21,14 +22,28 @@ public class VenueService : IVenueService
 
     }
 
-    public List<Venue> GetAll()
+    public List<VenueDto> GetAll()
     {
-        return _venueRepository.GetAll();
+        return _venueRepository.GetAll()
+           .Where(f => f.UpdateStatus != 3)
+           .Select(v => new VenueDto
+           {
+               Id = v.Id,
+               Name = v.Name
+           })
+           .ToList();
     }
 
-    public Venue GetById(int id)
+    public VenueDto GetById(int id)
     {
-        return _venueRepository.GetById(id);
+        var venue = _venueRepository.GetById(id);
+        if (venue is null || venue.UpdateStatus == 3)
+            return null;
+        return new VenueDto
+        {
+            Id = venue.Id,
+            Name = venue.Name
+        };
     }
 
     public Venue Create(Venue venue)

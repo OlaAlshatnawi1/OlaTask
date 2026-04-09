@@ -1,10 +1,9 @@
-﻿namespace Domain.Models;
+﻿namespace application.DTOs;
 
-public class Floor
+public class FloorDto
 {
     public int Id { get; set; }
     public string Name { get; set; }
     public int VenueId { get; set; }
     public int Level { get; set; }
-    public int UpdateStatus { get; set; }
 }

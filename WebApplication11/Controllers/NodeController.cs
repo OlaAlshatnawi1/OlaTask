@@ -14,7 +14,7 @@ namespace WebApplication11.Controllers
 
         public NodeController(INodeService nodeService)
         {
-            _nodeService = _nodeService;
+            _nodeService = nodeService;
         }
 
         [HttpGet]

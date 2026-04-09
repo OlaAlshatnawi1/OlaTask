@@ -1,11 +1,12 @@
-﻿using Domain.Models;
+﻿using application.DTOs;
+using Domain.Models;
 
 namespace application.Service.Interfaces
 {
     public interface INodeService
     {
-        List<Node> GetAll();
-        Node GetById(int id);
+        List<NodeDto> GetAll();
+        NodeDto GetById(int id);
         Node Create(Node node);
         Node Update(Node node);
         bool DeleteNode(int id);

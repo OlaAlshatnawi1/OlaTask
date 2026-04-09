@@ -1,6 +1,7 @@
 ﻿using application.Service.Interfaces;
 using Domain.Interfaces;
 using Domain.Models;
+using application.DTOs;
 
 namespace Application.Services;
 
@@ -15,14 +16,32 @@ public class FloorService : IFloorService
         _nodeService = nodeService;
     }
 
-    public List<Floor> GetAll()
+    public List<FloorDto> GetAll()
     {
-        return _floorRepository.GetAll();
+        return _floorRepository.GetAll()
+            .Where(f => f.UpdateStatus != 3)
+            .Select(f => new FloorDto
+            {
+                Id = f.Id,
+                Name = f.Name,
+                VenueId = f.VenueId,
+                Level = f.Level
+            })
+            .ToList();
     }
 
-    public Floor GetById(int id)
+    public FloorDto GetById(int id)
     {
-        return _floorRepository.GetById(id);
+        var floor = _floorRepository.GetById(id);
+        if (floor is null || floor.UpdateStatus == 3)
+            return null;
+        return new FloorDto
+        {
+            Id = floor.Id,
+            Name = floor.Name,
+            VenueId = floor.VenueId,
+            Level = floor.Level
+        };
     }
 
     public Floor Create(Floor floor)

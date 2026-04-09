@@ -1,6 +1,7 @@
 ﻿using application.Service.Interfaces;
 using Domain.Interfaces;
 using Domain.Models;
+using application.DTOs;
 
 namespace Application.Services;
 
@@ -15,14 +16,38 @@ public class NodeService : INodeService
         _lineService = lineService;
     }
 
-    public List<Node> GetAll()
+    public List<NodeDto> GetAll()
     {
-        return _nodeRepository.GetAll();
+        return _nodeRepository.GetAll()
+           .Where(f => f.UpdateStatus != 3)
+           .Select(n => new NodeDto
+           {
+               Id = n.Id,
+               FloorId = n.FloorId,
+               X = n.X,
+               Y = n.Y,
+               Long = n.Long,
+               Lat = n.Lat,
+               NodeType = n.NodeType
+           })
+           .ToList();
     }
 
-    public Node GetById(int id)
+    public NodeDto GetById(int id)
     {
-        return _nodeRepository.GetById(id);
+        var node = _nodeRepository.GetById(id);
+        if (node is null || node.UpdateStatus == 3)
+            return null;
+        return new NodeDto
+        {
+            Id = node.Id,
+            FloorId = node.FloorId,
+            X = node.X,
+            Y = node.Y,
+            Long = node.Long,
+            Lat = node.Lat,
+            NodeType = node.NodeType
+        };
     }
 
     public Node Create(Node node)

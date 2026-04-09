@@ -55,6 +55,6 @@ public class VenueRepository : GenericRepository<Venue>, IVenueRepository
         var venue = _context.Set<Venue>().Find(id);
         if (venue is null) return;
 
-        venue.IsDeleted = true;
+        venue.UpdateStatus = 3;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using application.Service.Interfaces;
 using Domain.Interfaces;
 using Domain.Models;
+using application.DTOs;
 
 namespace application.Service
 {
@@ -14,14 +15,32 @@ namespace application.Service
             _lineRepository = lineRepository;
         }
 
-        public List<Line> GetAll()
+        public List<LineDto> GetAll()
         {
-            return _lineRepository.GetAll();
+            return _lineRepository.GetAll()
+               .Where(f => f.UpdateStatus != 3)
+               .Select(l => new LineDto
+               {
+                   Id = l.Id,
+                   FirstNodeId = l.FirstNodeId,
+                   SecondNodeId = l.SecondNodeId,
+                   IsTwoWay = l.IsTwoWay
+               })
+               .ToList();
         }
 
-        public Line GetById(int id)
+        public LineDto GetById(int id)
         {
-            return _lineRepository.GetById(id);
+            var line = _lineRepository.GetById(id);
+            if (line is null || line.UpdateStatus == 3)
+                return null;
+            return new LineDto
+            {
+                Id = line.Id,
+                FirstNodeId = line.FirstNodeId,
+                SecondNodeId = line.SecondNodeId,
+                IsTwoWay = line.IsTwoWay
+            };
         }
 
         public Line Create(Line line)

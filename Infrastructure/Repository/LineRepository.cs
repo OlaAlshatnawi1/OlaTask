@@ -54,7 +54,7 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
         var line = _context.Set<Line>().Find(id);
         if (line is null) return;
 
-        line.IsDeleted = true;
+        line.UpdateStatus = 3;
     }
 
     public void SoftDeleteByNodeIds(IEnumerable<int> nodeIds)
@@ -66,7 +66,7 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
         if (lines.Count == 0) return;
 
         foreach (var line in lines)
-            line.IsDeleted = true;
+            line.UpdateStatus = 3;
 
     }
 

@@ -68,6 +68,9 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
 
         floor.UpdateStatus = 3;
         _context.SaveChanges();
+=======
+        floor.UpdateStatus = 3;
+>>>>>>> Stashed changes
     }
 
     public void SoftDeleteByVenueId(int venueId)

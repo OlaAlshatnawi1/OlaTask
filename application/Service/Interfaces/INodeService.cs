@@ -1,4 +1,4 @@
-﻿using application.DTOs;
+using application.DTOs;
 using application.DTOs.Filters;
 using Domain.Models;
 

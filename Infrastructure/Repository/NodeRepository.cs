@@ -67,6 +67,9 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
 
         node.UpdateStatus = 3;
         _context.SaveChanges();
+=======
+        node.UpdateStatus = 3;
+>>>>>>> Stashed changes
     }
 
     public void SoftDeleteByFloorId(int floorId)

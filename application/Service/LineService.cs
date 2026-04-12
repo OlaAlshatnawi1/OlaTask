@@ -7,6 +7,8 @@ using Domain.Models;
 
 namespace application.Service
 {
+    using application.DTOs;
+
     public class LineService : ILineService
     {
 

@@ -2,6 +2,7 @@
 using application.DTOs.Filters;
 using application.Exceptions;
 using application.Service.Interfaces;
+using application.DTOs;
 using Domain.Interfaces;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +55,47 @@ public class FloorService : IFloorService
         return _floorRepository.Update(floor);
     }
 
+=======
+    public List<FloorDto> GetAll()
+    {
+        return _floorRepository.GetAll()
+            .Where(f => f.UpdateStatus != 3 )
+            .Select(f => new FloorDto
+            {
+                Id = f.Id,
+                Name = f.Name,
+                VenueId = f.VenueId,
+                Level = f.Level
+            })
+            .ToList();
+    }
+
+    public FloorDto GetById(int id)
+    {
+        var floor = _floorRepository.GetById(id);
+        if (floor is null || floor.UpdateStatus == 3)
+            return null;
+
+        return new FloorDto
+        {
+            Id = floor.Id,
+            Name = floor.Name,
+            VenueId = floor.VenueId,
+            Level = floor.Level
+        };
+    }
+
+    public Floor Create(Floor floor)
+    {
+        return _floorRepository.Create(floor);
+    }
+
+    public Floor Update(Floor floor)
+    {
+        return _floorRepository.Update(floor);
+    }
+
+>>>>>>> Stashed changes
     public bool DeleteFloor(int id)
     {
         if (_floorRepository.GetById(id) is null)

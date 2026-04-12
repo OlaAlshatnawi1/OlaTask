@@ -18,12 +18,16 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
 
     public List<Floor> GetAll()
     {
-        return _context.Set<Floor>().ToList();
+        return _context.Set<Floor>()
+            .Include(f => f.Nodes.Where(n => n.UpdateStatus != 3))
+            .ToList();
     }
 
     public Floor GetById(int id)
     {
-        return _context.Set<Floor>().Find(id);
+        return _context.Set<Floor>()
+            .Include(f => f.Nodes.Where(n => n.UpdateStatus != 3))
+            .FirstOrDefault(f => f.Id == id);
     }
 
     public Floor Create(Floor entity)
@@ -69,7 +73,7 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
     public void SoftDeleteByVenueId(int venueId)
     {
         var floors = _context.Set<Floor>()
-            .Where(f => f.VenueId == venueId &&  f.UpdateStatus != 3)
+            .Where(f => f.VenueId == venueId && f.UpdateStatus != 3)
             .ToList();
 
         if (floors.Count == 0) return;
@@ -86,6 +90,14 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
         return _context.Set<Floor>()
             .Where(f => f.VenueId == venueId && f.UpdateStatus != 3)
             .Select(f => f.Id)
+            .ToList();
+    }
+
+    public List<Floor> GetByVenueId(int venueId)
+    {
+        return _context.Set<Floor>()
+            .Include(f => f.Nodes.Where(n => n.UpdateStatus != 3))
+            .Where(f => f.VenueId == venueId && f.UpdateStatus != 3)
             .ToList();
     }
 }

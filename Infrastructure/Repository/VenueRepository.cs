@@ -16,12 +16,16 @@ public class VenueRepository : GenericRepository<Venue>, IVenueRepository
 
     public List<Venue> GetAll()
     {
-        return _context.Set<Venue>().ToList();
+        return _context.Set<Venue>()
+            .Include(v => v.Floors.Where(f => f.UpdateStatus != 3))
+            .ToList();
     }
 
     public Venue GetById(int id)
     {
-        return _context.Set<Venue>().Find(id);
+        return _context.Set<Venue>()
+            .Include(v => v.Floors.Where(f => f.UpdateStatus != 3))
+            .FirstOrDefault(v => v.Id == id);
     }
 
     public Venue Create(Venue entity)

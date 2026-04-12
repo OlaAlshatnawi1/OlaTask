@@ -1,7 +1,9 @@
-﻿using application.Service.Interfaces;
+﻿using application.DTOs;
+using application.DTOs.Filters;
+using application.Service.Interfaces;
 using Domain.Interfaces;
 using Domain.Models;
-using application.DTOs;
+using application.Exceptions;
 
 
 namespace Application.Services;
@@ -22,32 +24,31 @@ public class VenueService : IVenueService
 
     }
 
-    public List<VenueDto> GetAll()
+    public List<VenueDto> GetAll(VenueFilter filter = null)
     {
         return _venueRepository.GetAll()
-           .Where(f => f.UpdateStatus != 3)
-           .Select(v => new VenueDto
-           {
-               Id = v.Id,
-               Name = v.Name
-           })
-           .ToList();
+            .Where(v => v.UpdateStatus != 3)
+            .Where(v => filter == null || string.IsNullOrEmpty(filter.Name)
+                || v.Name.Contains(filter.Name, StringComparison.OrdinalIgnoreCase))
+            .Select(v => MapToDto(v))
+            .ToList();
     }
 
     public VenueDto GetById(int id)
     {
         var venue = _venueRepository.GetById(id);
         if (venue is null || venue.UpdateStatus == 3)
-            return null;
-        return new VenueDto
-        {
-            Id = venue.Id,
-            Name = venue.Name
-        };
+            throw new NotFoundException("Venue", id); // throw NotFoundException — middleware catches it and returns 404 automatically
+
+        return MapToDto(venue);
     }
 
     public Venue Create(Venue venue)
     {
+        // Validate input before hitting the DB
+        if (string.IsNullOrWhiteSpace(venue.Name))
+            throw new ValidationException("Venue name is required");
+       
         return _venueRepository.Create(venue);
     }
 
@@ -64,8 +65,9 @@ public class VenueService : IVenueService
         {
             var venue = _uow.Venues.GetById(id);
 
+            // Throw instead of returning false — cleaner flow, middleware handles 404
             if (venue is null)
-                return false;
+                throw new NotFoundException("Venue", id);
 
             // cascade delete
             _floorService.DeleteFloorsByVenueId(id);
@@ -80,7 +82,22 @@ public class VenueService : IVenueService
         catch
         {
             await _uow.RollbackAsync();
-            throw;
+            throw;  // re-throw so middleware can catch and handle it
         }
     }
+
+
+    private VenueDto MapToDto(Venue v) => new VenueDto
+    {
+        Id = v.Id,
+        Name = v.Name,
+        Floors = v.Floors?
+            .Where(f => f.UpdateStatus != 3)
+            .Select(f => new FloorSummaryDto
+            {
+                Id = f.Id,
+                Name = f.Name,
+                Level = f.Level
+            }).ToList() ?? new()
+    };
 }

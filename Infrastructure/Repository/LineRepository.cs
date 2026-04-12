@@ -72,8 +72,16 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
 
         foreach (var line in lines)
             line.UpdateStatus = 3;
-       
+
         _context.SaveChanges();
+    }
+
+    public List<Line> GetByNodeId(int nodeId)
+    {
+        return _context.Set<Line>()
+            .Where(l => (l.FirstNodeId == nodeId || l.SecondNodeId == nodeId)
+                        && l.UpdateStatus != 3)
+            .ToList();
     }
 
 }

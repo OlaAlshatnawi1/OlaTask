@@ -2,6 +2,7 @@ using application;
 using Infrastructure.DB;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using WebApplication11.Middleware;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +21,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 
 
-
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -31,6 +31,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 
 var app = builder.Build();
+
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

@@ -1,15 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Domain.Models;
-using Domain.Interfaces;
 using application.Service.Interfaces;
+using application.DTOs.Filters;
 
 namespace WebApplication11.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/line")]
     public class LineController : ControllerBase
     {
-
         private readonly ILineService _lineService;
 
         public LineController(ILineService lineService)
@@ -17,29 +16,20 @@ namespace WebApplication11.Controllers
             _lineService = lineService;
         }
 
+      
         [HttpGet]
-        public IActionResult GetAll()
-        {
-            return Ok(_lineService.GetAll());
-        }
+        public IActionResult GetAll([FromQuery] LineFilter filter)
+            => Ok(_lineService.GetAll(filter));
 
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var line = _lineService.GetById(id);
-
-            if (line == null)
-                return NotFound();
-
-            return Ok(line);
+            return Ok(_lineService.GetById(id));
         }
 
         [HttpPost]
         public IActionResult Create(Line line)
-        {
-            var created = _lineService.Create(line);
-            return Ok(created);
-        }
+            => Ok(_lineService.Create(line));
 
         [HttpPut("{id}")]
         public IActionResult Update(int id, Line line)
@@ -48,12 +38,11 @@ namespace WebApplication11.Controllers
             return Ok(_lineService.Update(line));
         }
 
+        // Only soft-deletes this single line, no cascade needed
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            if (!_lineService.DeleteLine(id))
-                return NotFound();
-
+            if (!_lineService.DeleteLine(id)) return NotFound();
             return NoContent();
         }
     }

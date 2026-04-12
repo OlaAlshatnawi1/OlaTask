@@ -6,4 +6,6 @@ public class FloorDto
     public string Name { get; set; }
     public int VenueId { get; set; }
     public int Level { get; set; }
+    public List<NodeSummaryDto> Nodes { get; set; } = new();
 }
+

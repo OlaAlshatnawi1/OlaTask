@@ -1,91 +1,66 @@
-using Microsoft.AspNetCore.Mvc;
-using Domain.Models;
-using application.Service.Interfaces;
+﻿// ─── VenueController.cs ───────────────────────────────────────────────────────
 using application.DTOs.Filters;
+using application.DTOs.Requests;
+using application.Service.Interfaces;
+using Domain.Models;
+using Microsoft.AspNetCore.Mvc;
 
-namespace WebApplication11.Controllers
+[ApiController]
+[Route("api/venue")]
+public class VenueController : ControllerBase
 {
-    [ApiController]
-    [Route("api/venue")] 
-    public class VenueController : ControllerBase
+    private readonly IVenueService _venueService;
+    private readonly IFloorService _floorService;
+
+    public VenueController(IVenueService venueService, IFloorService floorService)
     {
-       
-        private readonly IVenueService _venueService;
-        private readonly IFloorService _floorService;
+        _venueService = venueService;
+        _floorService = floorService;
+    }
 
-        public VenueController(IVenueService venueService, IFloorService floorService)
-        {
-            _venueService = venueService;
-            _floorService = floorService;
-        }
+    // Filter intercepts Ok(...) and wraps it:
+    // { "success":true, "statusCode":200, "message":"OK", "data":[...] }
+    [HttpGet]
+    public IActionResult GetAll([FromQuery] VenueFilter filter)
+        => Ok(_venueService.GetAll(filter));
 
-       
-        [HttpGet]
-        public IActionResult GetAll([FromQuery] VenueFilter filter)
-            => Ok(_venueService.GetAll(filter));
+    // Service throws NotFoundException if not found
+    // Middleware catches it → { "success":false, "statusCode":404, "message":"Venue with id X was not found" }
+    [HttpGet("{id}")]
+    public IActionResult GetById(int id)
+        => Ok(_venueService.GetById(id));
 
-        
-        // Returns venue + its floors nested inside the response
-        [HttpGet("{id}")]
-        public IActionResult GetById(int id)
-        {
-            // If not found, service throws NotFoundException
-            // Middleware catches it ? returns { "statusCode": 404, "message": "Venue with id 5 was not found" }
-            // No null check needed here at all
-            return Ok(_venueService.GetById(id));
-        }
+    [HttpPost]
+    public IActionResult Create(CreateVenueRequest request)
+    => Created(string.Empty, _venueService.Create(request));
 
-     
-        [HttpPost]
-        public IActionResult Create(Venue venue)
-            => Ok(_venueService.Create(venue));
+    // PUT /api/venue/1
+    // Body: { "name": "New Mall Name" }
+    [HttpPut("{id}")]
+    public IActionResult Update(int id, UpdateVenueRequest request)
+        => Ok(_venueService.Update(id, request));
 
-      
-        // We assign the route id to the entity to prevent mismatch
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, Venue venue)
-        {
-            venue.Id = id;
-            return Ok(_venueService.Update(venue));
-        }
+    // Filter wraps NoContent():
+    // { "success":true, "statusCode":204, "message":"Deleted successfully", "data":null }
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        await _venueService.DeleteVenue(id);
+        return NoContent();
+    }
 
-        
-        // async because DeleteVenue uses a transaction (BeginTransactionAsync)
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            if (!await _venueService.DeleteVenue(id)) return NotFound();
-            return NoContent(); 
-        }
+    [HttpGet("{venueId}/floors")]
+    public IActionResult GetFloors(int venueId, [FromQuery] FloorFilter filter)
+        => Ok(_floorService.GetByVenueId(venueId, filter));
 
-        
-        // Navigation route � get all floors that belong to venue {venueId}
-        // [FromQuery] FloorFilter allows: ?name=ground&level=1
-        [HttpGet("{venueId}/floors")]
-        public IActionResult GetFloors(int venueId, [FromQuery] FloorFilter filter)
-        {
-            
-            if (_venueService.GetById(venueId) == null)
-                return NotFound("Venue not found");
-
-            return Ok(_floorService.GetByVenueId(venueId, filter));
-        }
-
-        
-        // Get one specific floor but only if it belongs to this venue
-        [HttpGet("{venueId}/floors/{floorId}")]
-        public IActionResult GetFloorById(int venueId, int floorId)
-        {
-            if (_venueService.GetById(venueId) == null)
-                return NotFound("Venue not found");
-
-            var floor = _floorService.GetById(floorId);
-
-            // Double check ownership � floor must belong to this venue
-            if (floor == null || floor.VenueId != venueId)
-                return NotFound("Floor not found in this venue");
-
-            return Ok(floor);
-        }
+    [HttpGet("{venueId}/floors/{floorId}")]
+    public IActionResult GetFloorById(int venueId, int floorId)
+    {
+        var floor = _floorService.GetById(floorId);
+        // Ownership check — throws ValidationException if wrong venue
+        if (floor.VenueId != venueId)
+            throw new application.Exceptions.ValidationException(
+                "Floor does not belong to this venue");
+        return Ok(floor);
     }
 }

@@ -1,49 +1,44 @@
-using Microsoft.AspNetCore.Mvc;
-using Domain.Models;
-using application.Service.Interfaces;
 using application.DTOs.Filters;
+using application.DTOs.Requests;
+using application.Service.Interfaces;
+using Domain.Models;
+using Microsoft.AspNetCore.Mvc;
 
-namespace WebApplication11.Controllers
+[ApiController]
+[Route("api/line")]
+public class LineController : ControllerBase
 {
-    [ApiController]
-    [Route("api/line")]
-    public class LineController : ControllerBase
+    private readonly ILineService _lineService;
+
+    public LineController(ILineService lineService)
     {
-        private readonly ILineService _lineService;
+        _lineService = lineService;
+    }
 
-        public LineController(ILineService lineService)
-        {
-            _lineService = lineService;
-        }
+    [HttpGet]
+    public IActionResult GetAll([FromQuery] LineFilter filter)
+        => Ok(_lineService.GetAll(filter));
 
-      
-        [HttpGet]
-        public IActionResult GetAll([FromQuery] LineFilter filter)
-            => Ok(_lineService.GetAll(filter));
+    [HttpGet("{id}")]
+    public IActionResult GetById(int id)
+        => Ok(_lineService.GetById(id));
 
-        [HttpGet("{id}")]
-        public IActionResult GetById(int id)
-        {
-            return Ok(_lineService.GetById(id));
-        }
+    [HttpPost]
+    public IActionResult Create(CreateLineRequest request)
+     => Created(string.Empty, _lineService.Create(request));
 
-        [HttpPost]
-        public IActionResult Create(Line line)
-            => Ok(_lineService.Create(line));
+    // PUT /api/line/1
+    // Body: { "isTwoWay": false }
+    [HttpPut("{id}")]
+    public IActionResult Update(int id, UpdateLineRequest request)
+        => Ok(_lineService.Update(id, request));
 
-        [HttpPut("{id}")]
-        public IActionResult Update(int id, Line line)
-        {
-            line.Id = id;
-            return Ok(_lineService.Update(line));
-        }
 
-        // Only soft-deletes this single line, no cascade needed
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            if (!_lineService.DeleteLine(id)) return NotFound();
-            return NoContent();
-        }
+
+    [HttpDelete("{id}")]
+    public IActionResult Delete(int id)
+    {
+        _lineService.DeleteLine(id);
+        return NoContent();
     }
 }

@@ -2,6 +2,7 @@ using application;
 using Infrastructure.DB;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using WebApplication11.Filters;
 using WebApplication11.Middleware;
 
 
@@ -28,6 +29,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 
+
+builder.Services.AddControllers(options =>
+{
+    // Registers ResponseWrapperFilter for EVERY controller action globally
+    // You never need [ResponseWrapper] on individual controllers
+    options.Filters.Add<ResponseWrapperFilter>();
+});
 
 
 var app = builder.Build();

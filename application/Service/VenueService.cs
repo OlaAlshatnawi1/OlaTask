@@ -1,10 +1,11 @@
 ﻿using application.DTOs;
-using application.DTOs.Filters;
-using application.Service.Interfaces;
 using application.DTOs;
+using application.DTOs.Filters;
+using application.DTOs.Requests;
+using application.Exceptions;
+using application.Service.Interfaces;
 using Domain.Interfaces;
 using Domain.Models;
-using application.Exceptions;
 
 
 namespace Application.Services;
@@ -44,18 +45,34 @@ public class VenueService : IVenueService
         return MapToDto(venue);
     }
 
-    public Venue Create(Venue venue)
+    public Venue Create(CreateVenueRequest request)
     {
-        // Validate input before hitting the DB
-        if (string.IsNullOrWhiteSpace(venue.Name))
+        if (string.IsNullOrWhiteSpace(request.Name))
             throw new ValidationException("Venue name is required");
-       
+
+        var venue = new Venue
+        {
+            Name = request.Name
+            // UpdateStatus is set to 1 inside the repository
+        };
+
         return _venueRepository.Create(venue);
     }
 
-    public Venue Update(Venue venue)
+    public Venue Update(int id, UpdateVenueRequest request)
     {
-        return _venueRepository.Update(venue);
+        // Fix 3: verify it exists before updating — throws 404 if not
+        var existing = _venueRepository.GetById(id);
+        if (existing is null || existing.UpdateStatus == 3)
+            throw new NotFoundException("Venue", id);
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+            throw new ValidationException("Venue name is required");
+
+        // Apply changes to the existing entity — don't replace the whole object
+        existing.Name = request.Name;
+
+        return _venueRepository.Update(existing);
     }
 
     public async Task<bool> DeleteVenue(int id)

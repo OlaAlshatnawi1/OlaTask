@@ -1,6 +1,11 @@
-﻿using application.Service.Interfaces;
+﻿using application.DTOs;
+using application.DTOs.Filters;
+using application.Service.Interfaces;
 using application.DTOs;
 using Domain.Interfaces;
+using Domain.Models;
+using application.Exceptions;
+
 
 namespace Application.Services;
 
@@ -8,30 +13,25 @@ public class VenueService : IVenueService
 {
     private readonly IVenueRepository _venueRepository;
     private readonly IFloorService _floorService;
+    private readonly IUnitOfWork _uow;
 
-    public VenueService(IVenueRepository venueRepository, IFloorService floorService)
+
+
+    public VenueService(IUnitOfWork uow, IVenueRepository venueRepository, IFloorService floorService)
     {
         _venueRepository = venueRepository;
         _floorService = floorService;
+        _uow = uow;
+
     }
 
-<<<<<<< Updated upstream
-    public bool DeleteVenue(int id)
-    {
-        if (_venueRepository.GetById(id) is null)
-            return false;
-
-        _floorService.DeleteFloorsByVenueId(id);
-=======
-    public List<VenueDto> GetAll()
+    public List<VenueDto> GetAll(VenueFilter filter = null)
     {
         return _venueRepository.GetAll()
             .Where(v => v.UpdateStatus != 3)
-            .Select(v => new VenueDto
-            {
-                Id = v.Id,
-                Name = v.Name
-            })
+            .Where(v => filter == null || string.IsNullOrEmpty(filter.Name)
+                || v.Name.Contains(filter.Name, StringComparison.OrdinalIgnoreCase))
+            .Select(v => MapToDto(v))
             .ToList();
     }
 
@@ -39,17 +39,66 @@ public class VenueService : IVenueService
     {
         var venue = _venueRepository.GetById(id);
         if (venue is null || venue.UpdateStatus == 3)
-            return null;
+            throw new NotFoundException("Venue", id); // throw NotFoundException — middleware catches it and returns 404 automatically
 
-        return new VenueDto
+        return MapToDto(venue);
+    }
+
+    public Venue Create(Venue venue)
+    {
+        // Validate input before hitting the DB
+        if (string.IsNullOrWhiteSpace(venue.Name))
+            throw new ValidationException("Venue name is required");
+       
+        return _venueRepository.Create(venue);
+    }
+
+    public Venue Update(Venue venue)
+    {
+        return _venueRepository.Update(venue);
+    }
+
+    public async Task<bool> DeleteVenue(int id)
+    {
+        await _uow.BeginTransactionAsync();
+
+        try
         {
-            Id = venue.Id,
-            Name = venue.Name
-        };
-    }
->>>>>>> Stashed changes
+            var venue = _uow.Venues.GetById(id);
 
-        _venueRepository.SoftDeleteById(id);
-        return true;
+            // Throw instead of returning false — cleaner flow, middleware handles 404
+            if (venue is null)
+                throw new NotFoundException("Venue", id);
+
+            // cascade delete
+            _floorService.DeleteFloorsByVenueId(id);
+
+            _uow.Venues.SoftDeleteById(id);
+
+            await _uow.SaveChangesAsync(); // ONE SAVE ONLY
+            await _uow.CommitAsync();
+
+            return true;
+        }
+        catch
+        {
+            await _uow.RollbackAsync();
+            throw;  // re-throw so middleware can catch and handle it
+        }
     }
+
+
+    private VenueDto MapToDto(Venue v) => new VenueDto
+    {
+        Id = v.Id,
+        Name = v.Name,
+        Floors = v.Floors?
+            .Where(f => f.UpdateStatus != 3)
+            .Select(f => new FloorSummaryDto
+            {
+                Id = f.Id,
+                Name = f.Name,
+                Level = f.Level
+            }).ToList() ?? new()
+    };
 }

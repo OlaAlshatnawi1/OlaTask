@@ -16,12 +16,18 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
 
     public List<Node> GetAll()
     {
-        return _context.Set<Node>().ToList();
+        return _context.Set<Node>()
+            .Include(n => n.LinesAsFirst.Where(l => l.UpdateStatus != 3))
+            .Include(n => n.LinesAsSecond.Where(l => l.UpdateStatus != 3))
+            .ToList();
     }
 
     public Node GetById(int id)
     {
-        return _context.Set<Node>().Find(id);
+        return _context.Set<Node>()
+            .Include(n => n.LinesAsFirst.Where(l => l.UpdateStatus != 3))
+            .Include(n => n.LinesAsSecond.Where(l => l.UpdateStatus != 3))
+            .FirstOrDefault(n => n.Id == id);
     }
 
     public Node Create(Node entity)
@@ -59,8 +65,7 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
         var node = _context.Set<Node>().Find(id);
         if (node is null) return;
 
-<<<<<<< Updated upstream
-        node.IsDeleted = true;
+        node.UpdateStatus = 3;
         _context.SaveChanges();
 =======
         node.UpdateStatus = 3;
@@ -108,6 +113,15 @@ public class NodeRepository : GenericRepository<Node>, INodeRepository
         return _context.Set<Node>()
             .Where(n => floorIds.Contains(n.FloorId) && n.UpdateStatus != 3)
             .Select(n => n.Id)
+            .ToList();
+    }
+
+    public List<Node> GetByFloorId(int floorId)
+    {
+        return _context.Set<Node>()
+            .Include(n => n.LinesAsFirst.Where(l => l.UpdateStatus != 3))
+            .Include(n => n.LinesAsSecond.Where(l => l.UpdateStatus != 3))
+            .Where(n => n.FloorId == floorId && n.UpdateStatus != 3)
             .ToList();
     }
 }

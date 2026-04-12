@@ -1,6 +1,11 @@
-﻿using application.Service.Interfaces;
+﻿using application.DTOs;
+using application.DTOs.Filters;
+using application.Exceptions;
+using application.Service.Interfaces;
 using application.DTOs;
 using Domain.Interfaces;
+using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services;
 
@@ -15,8 +20,41 @@ public class FloorService : IFloorService
         _nodeService = nodeService;
     }
 
-<<<<<<< Updated upstream
-    // delete one floor → use NodeService to delete its nodes and lines first
+    public List<FloorDto> GetAll(FloorFilter filter = null)
+    {
+        return _floorRepository.GetAll()
+            .Where(f => f.UpdateStatus != 3)
+            .Where(f => filter == null || string.IsNullOrEmpty(filter.Name)
+                || f.Name.Contains(filter.Name, StringComparison.OrdinalIgnoreCase))
+            .Where(f => filter == null || filter.Level == null || f.Level == filter.Level)
+            .Where(f => filter == null || filter.VenueId == null || f.VenueId == filter.VenueId)
+            .Select(f => MapToDto(f))
+            .ToList();
+    }
+
+    public FloorDto GetById(int id)
+    {
+        var floor = _floorRepository.GetById(id);
+        if (floor is null || floor.UpdateStatus == 3)
+            throw new NotFoundException("Floor", id);
+
+        return MapToDto(floor);
+    }
+
+    public Floor Create(Floor floor)
+    {
+        if (string.IsNullOrWhiteSpace(floor.Name))
+            throw new ValidationException("Floor name is required");
+        if (floor.VenueId <= 0)
+            throw new ValidationException("A valid VenueId is required");
+        return _floorRepository.Create(floor);
+    }
+
+    public Floor Update(Floor floor)
+    {
+        return _floorRepository.Update(floor);
+    }
+
 =======
     public List<FloorDto> GetAll()
     {
@@ -63,26 +101,60 @@ public class FloorService : IFloorService
         if (_floorRepository.GetById(id) is null)
             return false;
 
-        // delete nodes and their lines using NodeService
         _nodeService.DeleteNodesByFloorId(id);
 
-        // then delete the floor itself
         _floorRepository.SoftDeleteById(id);
         return true;
     }
 
-    // delete all floors in one venue → use NodeService to delete their nodes and lines first
     public bool DeleteFloorsByVenueId(int venueId)
     {
-        // get all floor ids in this venue
         var floorIds = _floorRepository.GetIdsByVenueId(venueId).ToList();
         if (floorIds.Count == 0) return true;
 
-        // delete nodes and their lines using NodeService
         _nodeService.DeleteNodesByFloorIds(floorIds);
 
-        // then delete the floors themselves
         _floorRepository.SoftDeleteByVenueId(venueId);
         return true;
     }
+
+    public List<FloorDto> GetByVenueId(int venueId)
+    {
+        return _floorRepository.GetByVenueId(venueId)
+            .Select(f => new FloorDto
+            {
+                Id = f.Id,
+                Name = f.Name,
+                VenueId = f.VenueId,
+                Level = f.Level
+            }).ToList();
+    }
+
+
+    public List<FloorDto> GetByVenueId(int venueId, FloorFilter filter = null)
+    {
+        return _floorRepository.GetByVenueId(venueId)
+            .Where(f => filter == null || string.IsNullOrEmpty(filter.Name)
+                || f.Name.Contains(filter.Name, StringComparison.OrdinalIgnoreCase))
+            .Where(f => filter == null || filter.Level == null || f.Level == filter.Level)
+            .Select(f => MapToDto(f))
+            .ToList();
+    }
+
+    private FloorDto MapToDto(Floor f) => new FloorDto
+    {
+        Id = f.Id,
+        Name = f.Name,
+        VenueId = f.VenueId,
+        Level = f.Level,
+        Nodes = f.Nodes?
+            .Where(n => n.UpdateStatus != 3)
+            .Select(n => new NodeSummaryDto
+            {
+                Id = n.Id,
+                X = n.X,
+                Y = n.Y,
+                NodeType = n.NodeType
+            }).ToList() ?? new()
+    };
 }

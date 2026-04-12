@@ -1,6 +1,5 @@
 ﻿namespace application.DTOs;
-
-public class LineDto
+public class LineSummaryDto
 {
     public int Id { get; set; }
     public int FirstNodeId { get; set; }

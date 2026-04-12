@@ -10,6 +10,7 @@ public interface INodeRepository : IGenericRepository<Node>
     void SoftDeleteById(int id);
     void SoftDeleteByFloorId(int floorId);
     void SoftDeleteByFloorIds(IEnumerable<int> floorIds);
+    List<Node> GetByFloorId(int floorId);
     IEnumerable<int> GetIdsByFloorId(int floorId);
     IEnumerable<int> GetIdsByFloorIds(IEnumerable<int> floorIds);
 }

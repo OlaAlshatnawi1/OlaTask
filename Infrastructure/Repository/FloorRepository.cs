@@ -1,8 +1,9 @@
-﻿using Domain.Models;
+﻿using application.Service;
+using Domain.Interfaces;
+using Domain.Models;
 using Infrastructure.DB;
 using Microsoft.EntityFrameworkCore;
-using application.Service;
-using Domain.Interfaces;
+using System.Drawing;
 
 namespace Infrastructure.Repository;
 
@@ -17,12 +18,16 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
 
     public List<Floor> GetAll()
     {
-        return _context.Set<Floor>().ToList();
+        return _context.Set<Floor>()
+            .Include(f => f.Nodes.Where(n => n.UpdateStatus != 3))
+            .ToList();
     }
 
     public Floor GetById(int id)
     {
-        return _context.Set<Floor>().Find(id);
+        return _context.Set<Floor>()
+            .Include(f => f.Nodes.Where(n => n.UpdateStatus != 3))
+            .FirstOrDefault(f => f.Id == id);
     }
 
     public Floor Create(Floor entity)
@@ -61,8 +66,7 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
         var floor = _context.Set<Floor>().Find(id);
         if (floor is null) return;
 
-<<<<<<< Updated upstream
-        floor.IsDeleted = true;
+        floor.UpdateStatus = 3;
         _context.SaveChanges();
 =======
         floor.UpdateStatus = 3;
@@ -78,9 +82,10 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
         if (floors.Count == 0) return;
 
         foreach (var floor in floors)
-            floor.UpdateStatus = 3;
+            floor.UpdateStatus = 3; ;
 
         _context.SaveChanges();
+
     }
 
     public IEnumerable<int> GetIdsByVenueId(int venueId)
@@ -88,6 +93,14 @@ public class FloorRepository : GenericRepository<Floor>, IFloorRepository
         return _context.Set<Floor>()
             .Where(f => f.VenueId == venueId && f.UpdateStatus != 3)
             .Select(f => f.Id)
+            .ToList();
+    }
+
+    public List<Floor> GetByVenueId(int venueId)
+    {
+        return _context.Set<Floor>()
+            .Include(f => f.Nodes.Where(n => n.UpdateStatus != 3))
+            .Where(f => f.VenueId == venueId && f.UpdateStatus != 3)
             .ToList();
     }
 }

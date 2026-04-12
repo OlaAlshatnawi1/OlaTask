@@ -58,8 +58,7 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
         var line = _context.Set<Line>().Find(id);
         if (line is null) return;
 
-<<<<<<< Updated upstream
-        line.IsDeleted = true;
+        line.UpdateStatus = 3;
         _context.SaveChanges();
 =======
         line.UpdateStatus = 3;
@@ -78,6 +77,14 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
             line.UpdateStatus = 3;
 
         _context.SaveChanges();
+    }
+
+    public List<Line> GetByNodeId(int nodeId)
+    {
+        return _context.Set<Line>()
+            .Where(l => (l.FirstNodeId == nodeId || l.SecondNodeId == nodeId)
+                        && l.UpdateStatus != 3)
+            .ToList();
     }
 
 }

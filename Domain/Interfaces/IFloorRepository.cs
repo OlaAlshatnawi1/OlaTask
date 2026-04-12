@@ -11,6 +11,7 @@ namespace Domain.Interfaces
         Floor Update(Floor entity);
         void SoftDeleteById(int id);
         void SoftDeleteByVenueId(int venueId);
+        List<Floor> GetByVenueId(int venueId);
         IEnumerable<int> GetIdsByVenueId(int venueId);
     }
 }

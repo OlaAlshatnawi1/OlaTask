@@ -1,4 +1,4 @@
-namespace application.DTOs;
+﻿namespace application.DTOs;
 
 public class NodeDto
 {
@@ -9,4 +9,6 @@ public class NodeDto
     public decimal Long { get; set; }
     public decimal Lat { get; set; }
     public string NodeType { get; set; }
+
+    public List<LineSummaryDto> Lines { get; set; } = new();
 }

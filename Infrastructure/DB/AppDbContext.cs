@@ -32,6 +32,18 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Line>()
             .ToTable("line");
 
+        modelBuilder.Entity<Line>()
+            .HasOne(l => l.FirstNode)
+            .WithMany(n => n.LinesAsFirst)
+            .HasForeignKey(l => l.FirstNodeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Line>()
+            .HasOne(l => l.SecondNode)
+            .WithMany(n => n.LinesAsSecond)
+            .HasForeignKey(l => l.SecondNodeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         base.OnModelCreating(modelBuilder);
     }
 

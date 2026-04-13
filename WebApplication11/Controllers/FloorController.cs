@@ -1,4 +1,3 @@
-// ??? FloorController.cs ???????????????????????????????????????????????????????
 using application.DTOs.Filters;
 using application.DTOs.Requests;
 using application.Service.Interfaces;
@@ -30,8 +29,6 @@ public class FloorController : ControllerBase
     public IActionResult Create(CreateFloorRequest request)
       => Created(string.Empty, _floorService.Create(request));
 
-    // PUT /api/floor/1
-    // Body: { "name": "Ground Floor Renamed", "level": 0 }
     [HttpPut("{id}")]
     public IActionResult Update(int id, UpdateFloorRequest request)
         => Ok(_floorService.Update(id, request));
@@ -50,6 +47,7 @@ public class FloorController : ControllerBase
     [HttpGet("{floorId}/nodes/{nodeId}")]
     public IActionResult GetNodeById(int floorId, int nodeId)
     {
+        _floorService.GetById(floorId);
         var node = _nodeService.GetById(nodeId);
         if (node.FloorId != floorId)
             throw new application.Exceptions.ValidationException(

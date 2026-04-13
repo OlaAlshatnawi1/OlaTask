@@ -1,5 +1,4 @@
 ﻿using application.DTOs;
-using application.DTOs;
 using application.DTOs.Filters;
 using application.DTOs.Requests;
 using application.Exceptions;
@@ -40,7 +39,7 @@ public class VenueService : IVenueService
     {
         var venue = _venueRepository.GetById(id);
         if (venue is null || venue.UpdateStatus == 3)
-            throw new NotFoundException("Venue", id); // throw NotFoundException — middleware catches it and returns 404 automatically
+            throw new NotFoundException("Venue", id);
 
         return MapToDto(venue);
     }
@@ -53,7 +52,6 @@ public class VenueService : IVenueService
         var venue = new Venue
         {
             Name = request.Name
-            // UpdateStatus is set to 1 inside the repository
         };
 
         return _venueRepository.Create(venue);
@@ -61,7 +59,6 @@ public class VenueService : IVenueService
 
     public Venue Update(int id, UpdateVenueRequest request)
     {
-        // Fix 3: verify it exists before updating — throws 404 if not
         var existing = _venueRepository.GetById(id);
         if (existing is null || existing.UpdateStatus == 3)
             throw new NotFoundException("Venue", id);
@@ -69,7 +66,6 @@ public class VenueService : IVenueService
         if (string.IsNullOrWhiteSpace(request.Name))
             throw new ValidationException("Venue name is required");
 
-        // Apply changes to the existing entity — don't replace the whole object
         existing.Name = request.Name;
 
         return _venueRepository.Update(existing);
@@ -83,16 +79,14 @@ public class VenueService : IVenueService
         {
             var venue = _uow.Venues.GetById(id);
 
-            // Throw instead of returning false — cleaner flow, middleware handles 404
             if (venue is null)
                 throw new NotFoundException("Venue", id);
 
-            // cascade delete
             _floorService.DeleteFloorsByVenueId(id);
 
             _uow.Venues.SoftDeleteById(id);
 
-            await _uow.SaveChangesAsync(); // ONE SAVE ONLY
+            await _uow.SaveChangesAsync();
             await _uow.CommitAsync();
 
             return true;
@@ -100,7 +94,7 @@ public class VenueService : IVenueService
         catch
         {
             await _uow.RollbackAsync();
-            throw;  // re-throw so middleware can catch and handle it
+            throw;
         }
     }
 

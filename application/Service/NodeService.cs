@@ -1,5 +1,4 @@
-﻿// NodeService.cs — full updated implementation
-using application.DTOs;
+﻿using application.DTOs;
 using application.DTOs.Filters;
 using application.DTOs.Requests;
 using application.Exceptions;
@@ -13,17 +12,19 @@ public class NodeService : INodeService
 {
     private readonly INodeRepository _nodeRepository;
     private readonly ILineService _lineService;
+    private readonly IFloorRepository _floorRepository;
 
-    public NodeService(INodeRepository nodeRepository, ILineService lineService)
+    public NodeService(INodeRepository nodeRepository, ILineService lineService, IFloorRepository floorRepository)
     {
         _nodeRepository = nodeRepository;
         _lineService = lineService;
+        _floorRepository = floorRepository;
     }
 
     public List<NodeDto> GetAll(NodeFilter filter = null)
     {
         return _nodeRepository.GetAll()
-            .Where(n => n.UpdateStatus != 3)           // Fix 2
+            .Where(n => n.UpdateStatus != 3)
             .Where(n => filter == null || string.IsNullOrEmpty(filter.NodeType)
                 || n.NodeType.Contains(filter.NodeType, StringComparison.OrdinalIgnoreCase))
             .Where(n => filter == null || filter.FloorId == null || n.FloorId == filter.FloorId)
@@ -35,7 +36,6 @@ public class NodeService : INodeService
     {
         var node = _nodeRepository.GetById(id);
 
-        // Fix 3: throw so middleware returns proper ApiResponse { success:false, statusCode:404 }
         if (node is null || node.UpdateStatus == 3)
             throw new NotFoundException("Node", id);
 
@@ -44,7 +44,10 @@ public class NodeService : INodeService
 
     public List<NodeDto> GetByFloorId(int floorId, NodeFilter filter = null)
     {
-        // Fix 2: GetByFloorId also excludes soft-deleted nodes
+        var floor = _floorRepository.GetById(floorId);
+        if (floor is null || floor.UpdateStatus == 3)
+            throw new NotFoundException("Floor", floorId);
+
         return _nodeRepository.GetByFloorId(floorId)
             .Where(n => n.UpdateStatus != 3)
             .Where(n => filter == null || string.IsNullOrEmpty(filter.NodeType)
@@ -53,7 +56,6 @@ public class NodeService : INodeService
             .ToList();
     }
 
-    // Fix 1: maps CreateNodeRequest → Node domain model
     public Node Create(CreateNodeRequest request)
     {
         if (request.FloorId <= 0)
@@ -72,12 +74,11 @@ public class NodeService : INodeService
         return _nodeRepository.Create(node);
     }
 
-    // Fix 1: only coordinates and type can change — FloorId is immutable
     public Node Update(int id, UpdateNodeRequest request)
     {
         var existing = _nodeRepository.GetById(id);
         if (existing is null || existing.UpdateStatus == 3)
-            throw new NotFoundException("Node", id);   // Fix 3
+            throw new NotFoundException("Node", id);
 
         existing.X = request.X;
         existing.Y = request.Y;
@@ -92,7 +93,7 @@ public class NodeService : INodeService
     {
         var node = _nodeRepository.GetById(id);
         if (node is null || node.UpdateStatus == 3)
-            throw new NotFoundException("Node", id);   // Fix 3
+            throw new NotFoundException("Node", id);
 
         _lineService.DeleteLinesByNodeIds(new[] { id });
         _nodeRepository.SoftDeleteById(id);
@@ -133,7 +134,6 @@ public class NodeService : INodeService
             Lat = n.Lat,
             NodeType = n.NodeType,
             Lines = allLines
-                // Fix 2: exclude soft-deleted lines inside nested node response
                 .Where(l => l.UpdateStatus != 3)
                 .Select(l => new LineSummaryDto
                 {

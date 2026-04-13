@@ -1,5 +1,4 @@
-﻿// LineService.cs — full updated implementation
-using application.DTOs;
+﻿using application.DTOs;
 using application.DTOs.Filters;
 using application.DTOs.Requests;
 using application.Exceptions;
@@ -12,16 +11,18 @@ namespace application.Service;
 public class LineService : ILineService
 {
     private readonly ILineRepository _lineRepository;
+    private readonly INodeRepository _nodeRepository;
 
-    public LineService(ILineRepository lineRepository)
+    public LineService(ILineRepository lineRepository, INodeRepository nodeRepository)
     {
         _lineRepository = lineRepository;
+        _nodeRepository = nodeRepository;
     }
 
     public List<LineDto> GetAll(LineFilter filter = null)
     {
         return _lineRepository.GetAll()
-            .Where(l => l.UpdateStatus != 3)           // Fix 2
+            .Where(l => l.UpdateStatus != 3)
             .Where(l => filter == null || filter.FirstNodeId == null
                 || l.FirstNodeId == filter.FirstNodeId)
             .Where(l => filter == null || filter.SecondNodeId == null
@@ -36,7 +37,6 @@ public class LineService : ILineService
     {
         var line = _lineRepository.GetById(id);
 
-        // Fix 3: throw NotFoundException — middleware formats as ApiResponse { success:false }
         if (line is null || line.UpdateStatus == 3)
             throw new NotFoundException("Line", id);
 
@@ -45,8 +45,11 @@ public class LineService : ILineService
 
     public List<LineDto> GetByNodeId(int nodeId, LineFilter filter = null)
     {
+        var node = _nodeRepository.GetById(nodeId);
+        if (node is null || node.UpdateStatus == 3)
+            throw new NotFoundException("Node", nodeId);
+
         return _lineRepository.GetByNodeId(nodeId)
-            // Fix 2: exclude soft-deleted lines in navigation results
             .Where(l => l.UpdateStatus != 3)
             .Where(l => filter == null || filter.IsTwoWay == null
                 || l.IsTwoWay == filter.IsTwoWay)
@@ -54,7 +57,6 @@ public class LineService : ILineService
             .ToList();
     }
 
-    // Fix 1: maps CreateLineRequest → Line domain model
     public Line Create(CreateLineRequest request)
     {
         if (request.FirstNodeId <= 0 || request.SecondNodeId <= 0)
@@ -72,12 +74,11 @@ public class LineService : ILineService
         return _lineRepository.Create(line);
     }
 
-    // Fix 1: only IsTwoWay can be updated — node endpoints are immutable
     public Line Update(int id, UpdateLineRequest request)
     {
         var existing = _lineRepository.GetById(id);
         if (existing is null || existing.UpdateStatus == 3)
-            throw new NotFoundException("Line", id);   // Fix 3
+            throw new NotFoundException("Line", id);
 
         existing.IsTwoWay = request.IsTwoWay;
 
@@ -88,7 +89,7 @@ public class LineService : ILineService
     {
         var line = _lineRepository.GetById(id);
         if (line is null || line.UpdateStatus == 3)
-            throw new NotFoundException("Line", id);   // Fix 3
+            throw new NotFoundException("Line", id);
 
         _lineRepository.SoftDeleteById(id);
         return true;

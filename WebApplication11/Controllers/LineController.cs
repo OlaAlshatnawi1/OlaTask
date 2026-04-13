@@ -27,8 +27,6 @@ public class LineController : ControllerBase
     public IActionResult Create(CreateLineRequest request)
      => Created(string.Empty, _lineService.Create(request));
 
-    // PUT /api/line/1
-    // Body: { "isTwoWay": false }
     [HttpPut("{id}")]
     public IActionResult Update(int id, UpdateLineRequest request)
         => Ok(_lineService.Update(id, request));

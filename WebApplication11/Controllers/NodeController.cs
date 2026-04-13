@@ -1,5 +1,4 @@
-﻿// ─── NodeController.cs ────────────────────────────────────────────────────────
-using application.DTOs.Filters;
+﻿using application.DTOs.Filters;
 using application.DTOs.Requests;
 using application.Service.Interfaces;
 using Domain.Models;
@@ -30,8 +29,6 @@ public class NodeController : ControllerBase
     public IActionResult Create(CreateNodeRequest request)
     => Created(string.Empty, _nodeService.Create(request));
 
-    // PUT /api/node/1
-    // Body: { "x": 11.0, "y": 21.0, "long": 35.2, "lat": 31.5, "nodeType": "exit" }
     [HttpPut("{id}")]
     public IActionResult Update(int id, UpdateNodeRequest request)
         => Ok(_nodeService.Update(id, request));

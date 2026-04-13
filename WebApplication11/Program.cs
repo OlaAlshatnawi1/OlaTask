@@ -22,7 +22,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -32,8 +31,6 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers(options =>
 {
-    // Registers ResponseWrapperFilter for EVERY controller action globally
-    // You never need [ResponseWrapper] on individual controllers
     options.Filters.Add<ResponseWrapperFilter>();
 });
 

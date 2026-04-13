@@ -1,11 +1,10 @@
 ﻿using application.DTOs;
 using application.DTOs.Filters;
+using application.DTOs.Requests;
 using application.Exceptions;
 using application.Service.Interfaces;
-using application.DTOs;
 using Domain.Interfaces;
 using Domain.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services;
 
@@ -13,11 +12,16 @@ public class FloorService : IFloorService
 {
     private readonly IFloorRepository _floorRepository;
     private readonly INodeService _nodeService;
+    private readonly IVenueRepository _venueRepository;
 
-    public FloorService(IFloorRepository floorRepository, INodeService nodeService)
+    public FloorService(
+        IFloorRepository floorRepository,
+        INodeService nodeService,
+        IVenueRepository venueRepository)
     {
         _floorRepository = floorRepository;
         _nodeService = nodeService;
+        _venueRepository = venueRepository;
     }
 
     public List<FloorDto> GetAll(FloorFilter filter = null)
@@ -35,74 +39,67 @@ public class FloorService : IFloorService
     public FloorDto GetById(int id)
     {
         var floor = _floorRepository.GetById(id);
+
         if (floor is null || floor.UpdateStatus == 3)
             throw new NotFoundException("Floor", id);
 
         return MapToDto(floor);
     }
 
-    public Floor Create(Floor floor)
+    public List<FloorDto> GetByVenueId(int venueId, FloorFilter filter = null)
     {
-        if (string.IsNullOrWhiteSpace(floor.Name))
-            throw new ValidationException("Floor name is required");
-        if (floor.VenueId <= 0)
-            throw new ValidationException("A valid VenueId is required");
-        return _floorRepository.Create(floor);
-    }
+        var venue = _venueRepository.GetById(venueId);
+        if (venue is null || venue.UpdateStatus == 3)
+            throw new NotFoundException("Venue", venueId);
 
-    public Floor Update(Floor floor)
-    {
-        return _floorRepository.Update(floor);
-    }
-
-=======
-    public List<FloorDto> GetAll()
-    {
-        return _floorRepository.GetAll()
-            .Where(f => f.UpdateStatus != 3 )
-            .Select(f => new FloorDto
-            {
-                Id = f.Id,
-                Name = f.Name,
-                VenueId = f.VenueId,
-                Level = f.Level
-            })
+        return _floorRepository.GetByVenueId(venueId)
+            .Where(f => f.UpdateStatus != 3)
+            .Where(f => filter == null || string.IsNullOrEmpty(filter.Name)
+                || f.Name.Contains(filter.Name, StringComparison.OrdinalIgnoreCase))
+            .Where(f => filter == null || filter.Level == null || f.Level == filter.Level)
+            .Select(f => MapToDto(f))
             .ToList();
     }
 
-    public FloorDto GetById(int id)
+    public Floor Create(CreateFloorRequest request)
     {
-        var floor = _floorRepository.GetById(id);
-        if (floor is null || floor.UpdateStatus == 3)
-            return null;
+        if (string.IsNullOrWhiteSpace(request.Name))
+            throw new ValidationException("Floor name is required");
+        if (request.VenueId <= 0)
+            throw new ValidationException("A valid VenueId is required");
 
-        return new FloorDto
+        var floor = new Floor
         {
-            Id = floor.Id,
-            Name = floor.Name,
-            VenueId = floor.VenueId,
-            Level = floor.Level
+            Name = request.Name,
+            VenueId = request.VenueId,
+            Level = request.Level
         };
-    }
 
-    public Floor Create(Floor floor)
-    {
         return _floorRepository.Create(floor);
     }
 
-    public Floor Update(Floor floor)
+    public Floor Update(int id, UpdateFloorRequest request)
     {
-        return _floorRepository.Update(floor);
+        var existing = _floorRepository.GetById(id);
+        if (existing is null || existing.UpdateStatus == 3)
+            throw new NotFoundException("Floor", id);
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+            throw new ValidationException("Floor name is required");
+
+        existing.Name = request.Name;
+        existing.Level = request.Level;
+
+        return _floorRepository.Update(existing);
     }
 
->>>>>>> Stashed changes
     public bool DeleteFloor(int id)
     {
-        if (_floorRepository.GetById(id) is null)
-            return false;
+        var floor = _floorRepository.GetById(id);
+        if (floor is null || floor.UpdateStatus == 3)
+            throw new NotFoundException("Floor", id);
 
         _nodeService.DeleteNodesByFloorId(id);
-
         _floorRepository.SoftDeleteById(id);
         return true;
     }
@@ -111,34 +108,9 @@ public class FloorService : IFloorService
     {
         var floorIds = _floorRepository.GetIdsByVenueId(venueId).ToList();
         if (floorIds.Count == 0) return true;
-
         _nodeService.DeleteNodesByFloorIds(floorIds);
-
         _floorRepository.SoftDeleteByVenueId(venueId);
         return true;
-    }
-
-    public List<FloorDto> GetByVenueId(int venueId)
-    {
-        return _floorRepository.GetByVenueId(venueId)
-            .Select(f => new FloorDto
-            {
-                Id = f.Id,
-                Name = f.Name,
-                VenueId = f.VenueId,
-                Level = f.Level
-            }).ToList();
-    }
-
-
-    public List<FloorDto> GetByVenueId(int venueId, FloorFilter filter = null)
-    {
-        return _floorRepository.GetByVenueId(venueId)
-            .Where(f => filter == null || string.IsNullOrEmpty(filter.Name)
-                || f.Name.Contains(filter.Name, StringComparison.OrdinalIgnoreCase))
-            .Where(f => filter == null || filter.Level == null || f.Level == filter.Level)
-            .Select(f => MapToDto(f))
-            .ToList();
     }
 
     private FloorDto MapToDto(Floor f) => new FloorDto

@@ -60,9 +60,8 @@ public class LineRepository : GenericRepository<Line>, ILineRepository
 
         line.UpdateStatus = 3;
         _context.SaveChanges();
-=======
+
         line.UpdateStatus = 3;
->>>>>>> Stashed changes
     }
 
     public void SoftDeleteByNodeIds(IEnumerable<int> nodeIds)

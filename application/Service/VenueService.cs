@@ -1,10 +1,10 @@
 ﻿using application.DTOs;
 using application.DTOs.Filters;
+using application.DTOs.Requests;
+using application.Exceptions;
 using application.Service.Interfaces;
-using application.DTOs;
 using Domain.Interfaces;
 using Domain.Models;
-using application.Exceptions;
 
 
 namespace Application.Services;
@@ -39,23 +39,36 @@ public class VenueService : IVenueService
     {
         var venue = _venueRepository.GetById(id);
         if (venue is null || venue.UpdateStatus == 3)
-            throw new NotFoundException("Venue", id); // throw NotFoundException — middleware catches it and returns 404 automatically
+            throw new NotFoundException("Venue", id);
 
         return MapToDto(venue);
     }
 
-    public Venue Create(Venue venue)
+    public Venue Create(CreateVenueRequest request)
     {
-        // Validate input before hitting the DB
-        if (string.IsNullOrWhiteSpace(venue.Name))
+        if (string.IsNullOrWhiteSpace(request.Name))
             throw new ValidationException("Venue name is required");
-       
+
+        var venue = new Venue
+        {
+            Name = request.Name
+        };
+
         return _venueRepository.Create(venue);
     }
 
-    public Venue Update(Venue venue)
+    public Venue Update(int id, UpdateVenueRequest request)
     {
-        return _venueRepository.Update(venue);
+        var existing = _venueRepository.GetById(id);
+        if (existing is null || existing.UpdateStatus == 3)
+            throw new NotFoundException("Venue", id);
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+            throw new ValidationException("Venue name is required");
+
+        existing.Name = request.Name;
+
+        return _venueRepository.Update(existing);
     }
 
     public async Task<bool> DeleteVenue(int id)
@@ -66,16 +79,14 @@ public class VenueService : IVenueService
         {
             var venue = _uow.Venues.GetById(id);
 
-            // Throw instead of returning false — cleaner flow, middleware handles 404
             if (venue is null)
                 throw new NotFoundException("Venue", id);
 
-            // cascade delete
             _floorService.DeleteFloorsByVenueId(id);
 
             _uow.Venues.SoftDeleteById(id);
 
-            await _uow.SaveChangesAsync(); // ONE SAVE ONLY
+            await _uow.SaveChangesAsync();
             await _uow.CommitAsync();
 
             return true;
@@ -83,7 +94,7 @@ public class VenueService : IVenueService
         catch
         {
             await _uow.RollbackAsync();
-            throw;  // re-throw so middleware can catch and handle it
+            throw;
         }
     }
 

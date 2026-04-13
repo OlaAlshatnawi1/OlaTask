@@ -2,6 +2,7 @@ using application;
 using Infrastructure.DB;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using WebApplication11.Filters;
 using WebApplication11.Middleware;
 
 
@@ -21,13 +22,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 
+
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ResponseWrapperFilter>();
+});
 
 
 var app = builder.Build();

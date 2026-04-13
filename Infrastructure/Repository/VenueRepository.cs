@@ -65,8 +65,7 @@ public class VenueRepository : GenericRepository<Venue>, IVenueRepository
 
         venue.UpdateStatus = 3;
         _context.SaveChanges();
-=======
+
         venue.UpdateStatus = 3;
->>>>>>> Stashed changes
     }
 }

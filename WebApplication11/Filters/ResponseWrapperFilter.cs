@@ -30,6 +30,14 @@ public class ResponseWrapperFilter : IActionFilter
                 };
                 break;
 
+            case CreatedResult created:
+                context.Result = new ObjectResult(
+                    ApiResponse<object>.Created(created.Value!))
+                {
+                    StatusCode = 201
+                };
+                break;
+
             case NoContentResult:
                 context.Result = new ObjectResult(
                     ApiResponse.NoContent())

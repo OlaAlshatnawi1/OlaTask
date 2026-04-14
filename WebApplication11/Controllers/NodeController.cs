@@ -27,11 +27,17 @@ public class NodeController : ControllerBase
 
     [HttpPost]
     public IActionResult Create(CreateNodeRequest request)
-    => Created(string.Empty, _nodeService.Create(request));
+    {
+        var created = _nodeService.Create(request);
+        return Created(string.Empty, _nodeService.GetById(created.Id));
+    }
 
     [HttpPut("{id}")]
     public IActionResult Update(int id, UpdateNodeRequest request)
-        => Ok(_nodeService.Update(id, request));
+    {
+        _nodeService.Update(id, request);
+        return Ok(_nodeService.GetById(id));
+    }
 
 
     [HttpDelete("{id}")]

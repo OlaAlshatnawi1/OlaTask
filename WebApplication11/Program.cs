@@ -2,6 +2,7 @@ using application;
 using Infrastructure.DB;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using System.Text.Json.Serialization;
 using WebApplication11.Filters;
 using WebApplication11.Middleware;
 
@@ -22,17 +23,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 );
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ResponseWrapperFilter>();
+})
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
-
-
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<ResponseWrapperFilter>();
-});
 
 
 var app = builder.Build();

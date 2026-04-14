@@ -27,11 +27,17 @@ public class FloorController : ControllerBase
 
     [HttpPost]
     public IActionResult Create(CreateFloorRequest request)
-      => Created(string.Empty, _floorService.Create(request));
+    {
+        var created = _floorService.Create(request);
+        return Created(string.Empty, _floorService.GetById(created.Id));
+    }
 
     [HttpPut("{id}")]
     public IActionResult Update(int id, UpdateFloorRequest request)
-        => Ok(_floorService.Update(id, request));
+    {
+        _floorService.Update(id, request);
+        return Ok(_floorService.GetById(id));
+    }
 
     [HttpDelete("{id}")]
     public IActionResult Delete(int id)

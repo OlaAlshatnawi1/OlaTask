@@ -25,11 +25,17 @@ public class LineController : ControllerBase
 
     [HttpPost]
     public IActionResult Create(CreateLineRequest request)
-     => Created(string.Empty, _lineService.Create(request));
+    {
+        var created = _lineService.Create(request);
+        return Created(string.Empty, _lineService.GetById(created.Id));
+    }
 
     [HttpPut("{id}")]
     public IActionResult Update(int id, UpdateLineRequest request)
-        => Ok(_lineService.Update(id, request));
+    {
+        _lineService.Update(id, request);
+        return Ok(_lineService.GetById(id));
+    }
 
 
 

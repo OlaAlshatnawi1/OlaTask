@@ -27,11 +27,17 @@ public class VenueController : ControllerBase
 
     [HttpPost]
     public IActionResult Create(CreateVenueRequest request)
-    => Created(string.Empty, _venueService.Create(request));
+    {
+        var created = _venueService.Create(request);
+        return Created(string.Empty, _venueService.GetById(created.Id));
+    }
 
     [HttpPut("{id}")]
     public IActionResult Update(int id, UpdateVenueRequest request)
-        => Ok(_venueService.Update(id, request));
+    {
+        _venueService.Update(id, request);
+        return Ok(_venueService.GetById(id));
+    }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
